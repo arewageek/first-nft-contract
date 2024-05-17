@@ -1,27 +1,35 @@
-import { ethers } from "hardhat";
+const { ethers } = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+  // parameters for the contraact constructor
+  const initialOwner = "Mystical";
+  const tokenName = "Mystical";
+  const ticker = "MST";
 
-  const lockedAmount = ethers.parseEther("0.001");
+  // contract factory
+  const contract = await ethers.getContractFactory(tokenName);
 
-  const lock = await ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
-
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
+  // Deploy the contract
+  const deployedContract = await contract.deploy(
+    initialOwner,
+    tokenName,
+    ticker
   );
+  await deployedContract.deployed();
+
+  console.log("Contract deployed to:", deployedContract.address);
+
+  // Optional: Set base URI if needed
+  // if (baseUri) {
+  //   const setBaseURITx = await deployedContract.setBaseURI(baseUri);
+  //   await setBaseURITx.wait();
+  //   console.log("Base URI set successfully!");
+  // }
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
